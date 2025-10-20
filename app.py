@@ -16,8 +16,8 @@ app = Flask(__name__)
 
 def load_tokens(server_name):
     try:
-        if server_name == "ID":
-            with open("token_id.json", "r") as f:
+        if server_name == "IND":
+            with open("token_ind.json", "r") as f:
                 tokens = json.load(f)
         elif server_name in {"BR", "US", "SAC", "NA"}:
             with open("token_br.json", "r") as f:
@@ -120,8 +120,8 @@ def enc(uid):
 
 def make_request(encrypt, server_name, token):
     try:
-        if server_name == "ID":
-            url = "https://clientbp.ggblueshark.com/GetPlayerPersonalShow"
+        if server_name == "IND":
+            url = "https://client.ind.freefiremobile.com/GetPlayerPersonalShow"
         elif server_name in {"BR", "US", "SAC", "NA"}:
             url = "https://client.us.freefiremobile.com/GetPlayerPersonalShow"
         else:
@@ -225,8 +225,8 @@ def handle_requests():
                 before_like = 0
             app.logger.info(f"Likes before command: {before_like}")
 
-            if server_name_used == "ID":
-                url = "https://clientbp.ggblueshark.com/LikeProfile"
+            if server_name_used == "IND":
+                url = "https://client.ind.freefiremobile.com/LikeProfile"
             elif server_name_used in {"BR", "US", "SAC", "NA"}:
                 url = "https://client.us.freefiremobile.com/LikeProfile"
             else:
