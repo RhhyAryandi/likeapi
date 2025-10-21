@@ -163,29 +163,29 @@ def decode_protobuf(binary):
 
 def fetch_player_info(uid):
     try:
-        url = f"https://infoapi-76742.vercel.app/info?server-name=id&uid={uid}"
+        url = f"https://infoapi-76742.vercel.app/info?server-name=bd&uid={uid}"
         response = requests.get(url, timeout=8)
         if response.status_code == 200:
             data = response.json()
             return {
                 "Level": data.get("level", "NA"),
-                "Region": "ID",
+                "Region": "bd",
                 "ReleaseVersion": data.get("release_version", "OB50")
             }
         else:
             app.logger.error(f"Player info API failed with status code: {response.status_code}")
-            return {"Level": "NA", "Region": "IND", "ReleaseVersion": "OB50"}
+            return {"Level": "NA", "Region": "bd", "ReleaseVersion": "OB50"}
             
     except Exception as e:
         app.logger.error(f"Error fetching player info from API: {e}")
-        return {"Level": "NA", "Region": "ID", "ReleaseVersion": "OB50"}
+        return {"Level": "NA", "Region": "bd", "ReleaseVersion": "OB50"}
 
 @app.route('/like', methods=['GET'])
 def handle_requests():
     uid = request.args.get("uid")
     if not uid:
         return jsonify({"error": "UID is required"}), 400
-    server_name_used = "ID"
+    server_name_used = "bd"
     try:
         def process_request():
             player_info = fetch_player_info(uid)
@@ -250,7 +250,7 @@ asyncio.run(send_multiple_requests(uid, server_name_used, url))
             region = player_info["Region"]
             level = player_info["Level"]
             release_version = player_info["ReleaseVersion"]
-            server_name_used = "ID"
+            server_name_used = "bd"
 
             # Validate server_name against region from API
             if region != "NA" and server_name != region:
