@@ -185,6 +185,62 @@ def handle_requests():
     uid = request.args.get("uid")
     if not uid:
         return jsonify({"error": "UID is required"}), 400
+    server_name_used = "ID"
+    try:
+        def process_request():
+            player_info = fetch_player_info(uid)
+            region = player_info["Region"]
+            level = player_info["Level"]
+            release_version = player_info["ReleaseVersion"]
+            
+            tokens = load_tokens(server_name_used)
+            if tokens is None:
+                raise Exception("Failed to load tokens.")
+            token = tokens[0]['token']
+            
+            encrypted_uid = enc(uid)
+            if encrypted_uid is None:
+                raise Exception("Encryption of UID failed.")
+            before = make_request(encrypted_uid, server_name_used, token)
+            if before is None:
+                raise Exception("Failed to retrieve initial player info.")
+            jsone = MessageToJson(before)
+            data_before = json.loads(jsone)
+            before_like = int(data_before.get('AccountInfo', {}).get('Likes', 0))
+            app.logger.info(f"Likes before command: {before_like}")
+            
+            url = "https://clientbp.freefiremobile.com/LikeProfile"
+            
+asyncio.run(send_multiple_requests(uid, server_name_used, url))
+            after = make_request(encrypted_uid, server_name_used, token)
+            if after is None:
+                raise Exception("Failed to retrieve player info after like requests.")
+            jsone_after = MessageToJson(after)
+            data_after = json.loads(jsone_after)
+            after_like = int(data_after.get('AccountInfo', {}).get('Likes', 0))
+            player_uid = int(data_after.get('AccountInfo', {}).get('UID', 0))
+            player_name = str(data_after.get('AccountInfo', {}).get('PlayerNickname', ''))
+            like_given = after_like - before_like
+            status = 1 if like_given != 0 else 2
+            result = {
+                "LikesGivenByAPI": like_given,
+                "LikesafterCommand": after_like,
+                "LikesbeforeCommand": before_like,
+                "PlayerNickname": player_name,
+                "Region": region,
+                "Level": level,
+                "UID": player_uid,
+                "ReleaseVersion": release_version,
+                "status": status
+            }
+            return result
+        result = process_request()
+        return jsonify(result)
+    except Exception as e:
+        app.logger.error(f"Error processing request: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
         
 
     try:
