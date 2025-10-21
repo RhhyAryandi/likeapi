@@ -163,29 +163,29 @@ def decode_protobuf(binary):
 
 def fetch_player_info(uid):
     try:
-        url = f"https://nr-codex-info.vercel.app/get?uid={uid}"
-        response = requests.get(url, timeout=5)
+        url = f"https://infoapi-76742.vercel.app/info?server-name=id&uid={uid}"
+        response = requests.get(url, timeout=8)
         if response.status_code == 200:
             data = response.json()
-            account_info = data.get("AccountInfo", {})
             return {
-                "Level": account_info.get("AccountLevel", "NA"),
-                "Region": account_info.get("AccountRegion", "NA"),
-                "ReleaseVersion": account_info.get("ReleaseVersion", "NA")
+                "Level": data.get("level", "NA"),
+                "Region": "ID",
+                "ReleaseVersion": data.get("release_version", "OB50")
             }
         else:
             app.logger.error(f"Player info API failed with status code: {response.status_code}")
-            return {"Level": "NA", "Region": "NA", "ReleaseVersion": "NA"}
+            return {"Level": "NA", "Region": "IND", "ReleaseVersion": "OB50"}
+            
     except Exception as e:
         app.logger.error(f"Error fetching player info from API: {e}")
-        return {"Level": "NA", "Region": "NA", "ReleaseVersion": "NA"}
+        return {"Level": "NA", "Region": "ID", "ReleaseVersion": "OB50"}
 
 @app.route('/like', methods=['GET'])
 def handle_requests():
     uid = request.args.get("uid")
-    server_name = request.args.get("server_name", "").upper()
-    if not uid or not server_name:
-        return jsonify({"error": "UID and server_name are required"}), 400
+    if not uid:
+        return jsonify({"error": "UID is required"}), 400
+        
 
     try:
         def process_request():
@@ -194,6 +194,7 @@ def handle_requests():
             region = player_info["Region"]
             level = player_info["Level"]
             release_version = player_info["ReleaseVersion"]
+            server_name_used = "ID"
 
             # Validate server_name against region from API
             if region != "NA" and server_name != region:
